@@ -12,10 +12,10 @@ async function getFFmpeg(onProgress) {
   if (ffmpeg) return ffmpeg;
   const f = new FFmpeg();
   if (onProgress) onProgress("Loading ffmpeg.wasm (first time only)...");
-  const base = new URL("../vendor/ffmpeg/", import.meta.url);
+  const base = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm/";
   await f.load({
-    coreURL: new URL("ffmpeg-core.js", base).href,
-    wasmURL: new URL("ffmpeg-core.wasm", base).href,
+    coreURL: base + "ffmpeg-core.js",
+    wasmURL: base + "ffmpeg-core.wasm",
   });
   ffmpeg = f;
   return ffmpeg;
