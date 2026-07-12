@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DanceSync</title>
+<style>
+  :root {
+    --bg: #14161a; --panel: #1d2026; --edge: #2c313a;
+    --text: #e8eaed; --dim: #9aa3af; --accent: #e8734a;
+    --ok: #6fbf73; --warn: #e0a83f; --error: #e06060;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; justify-content: center;
+  }
+  main { width: 100%; max-width: 760px; }
+  h1 { font-size: 22px; margin: 0 0 2px; letter-spacing: 0.3px; }
+  .tagline { color: var(--dim); margin: 0 0 20px; font-size: 13px; }
+  section {
+    background: var(--panel); border: 1px solid var(--edge);
+    border-radius: 10px; padding: 16px 18px; margin-bottom: 14px;
+  }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+       color: var(--dim); margin: 0 0 12px; }
+  .filerow { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+  .filerow label {
+    background: var(--edge); padding: 7px 14px; border-radius: 7px;
+    cursor: pointer; white-space: nowrap; font-size: 14px;
+  }
+  .filerow label:hover { background: #3a4150; }
+  .filerow input[type="file"] { display: none; }
+  .filename { color: var(--dim); font-size: 13px; overflow: hidden;
+              text-overflow: ellipsis; white-space: nowrap; }
+  button {
+    background: var(--accent); color: #fff; border: 0; border-radius: 7px;
+    padding: 9px 18px; font-size: 15px; cursor: pointer;
+  }
+  button:disabled { background: var(--edge); color: var(--dim); cursor: default; }
+  button:not(:disabled):hover { filter: brightness(1.1); }
+  .status { margin-top: 10px; font-size: 13px; color: var(--dim);
+            white-space: pre-wrap; min-height: 1em; }
+  .status.ok { color: var(--ok); } .status.warn { color: var(--warn); }
+  .status.error { color: var(--error); }
+  #result { white-space: pre-wrap; font-family: ui-monospace, Menlo, monospace;
+            font-size: 13px; margin-top: 10px; color: var(--text); }
+  video { width: 100%; border-radius: 8px; background: #000; margin-bottom: 10px; }
+  .radio { display: block; margin: 6px 0; cursor: pointer; }
+  .sliderrow { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .sliderrow.disabled { opacity: 0.4; }
+  .sliderrow span.cap { font-size: 12px; color: var(--dim); width: 46px; }
+  input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .sliderlabel { text-align: center; font-size: 13px; color: var(--dim);
+                 margin-top: 4px; }
+  .hint { font-size: 12.5px; color: var(--dim); margin-top: 8px; }
+  progress { width: 100%; margin-top: 10px; display: none; }
+  #download-link { display: none; margin-top: 12px; color: var(--accent);
+                   font-weight: 600; }
+  footer { color: var(--dim); font-size: 12px; text-align: center;
+           margin: 18px 0 6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>DanceSync</h1>
+  <p class="tagline">Studio audio, live footage — synced entirely in your
+    browser. Files never leave this device.</p>
+
+  <section>
+    <h2>1 · Choose files</h2>
+    <div class="filerow">
+      <label>Select dance video<input type="file" id="video-input"
+        accept="video/*,.mp4,.mov,.m4v,.webm"></label>
+      <span class="filename" id="video-name">none</span>
+    </div>
+    <div class="filerow">
+      <label>Select studio audio<input type="file" id="studio-input"
+        accept="audio/*,.mp3,.m4a,.wav,.flac,.aac"></label>
+      <span class="filename" id="studio-name">none</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · Auto-sync</h2>
+    <button id="analyze-btn" disabled>Analyze &amp; auto-detect sync</button>
+    <div id="result"></div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section>
+    <h2>3 · Output mode</h2>
+    <label class="radio"><input type="radio" name="mode" value="replace" checked>
+      Full Replace — studio track only</label>
+    <label class="radio"><input type="radio" name="mode" value="balance">
+      Balance Mode — blend live audio (crowd + live music) with the studio track</label>
+    <div class="sliderrow disabled" id="balance-row">
+      <span class="cap">Studio</span>
+      <input type="range" id="balance-slider" min="0" max="100" value="50" disabled>
+      <span class="cap" style="text-align:right">Live</span>
+    </div>
+    <div class="sliderlabel" id="balance-label">Mix: 50% live / 50% studio</div>
+  </section>
+
+  <section>
+    <h2>4 · Preview &amp; fine-tune</h2>
+    <video id="preview-video" controls playsinline></video>
+    <div class="sliderrow">
+      <span class="cap">−500</span>
+      <input type="range" id="nudge-slider" min="-500" max="500" step="10" value="0">
+      <span class="cap" style="text-align:right">+500</span>
+    </div>
+    <div class="sliderlabel" id="nudge-label">Nudge: +0 ms</div>
+    <div class="hint" id="preview-hint">Analyze first, then press play.
+      Music hitting too EARLY (beat before the move)? Drag right.
+      Too LATE? Drag left. Changes apply while playing.</div>
+  </section>
+
+  <section>
+    <h2>5 · Export</h2>
+    <button id="export-btn" disabled>Export synced video</button>
+    <progress id="export-bar" max="1" value="0"></progress>
+    <br><a id="download-link"></a>
+    <div class="hint">Export runs in your browser via ffmpeg.wasm. The video
+      stream is copied without re-encoding; only the audio is rebuilt.
+      Preview note: tempo-drift correction uses a tiny pitch shift during
+      preview only — the export is pitch-preserving.</div>
+  </section>
+
+  <footer>Personal-use tool · everything runs locally · nothing is uploaded</footer>
+</main>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
