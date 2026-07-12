@@ -6,6 +6,7 @@
 import { decodeFile, toAnalysisPcm, ANALYSIS_SR } from "./audio.js";
 import { PreviewEngine } from "./preview.js";
 import { exportFinal } from "./exporter.js";
+import { hasExportsRemaining, recordSuccessfulExport } from "./usage-limit.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -146,6 +147,10 @@ $("nudge-slider").addEventListener("input", (e) => {
 
 // ---------- step 5: export ----------
 $("export-btn").addEventListener("click", async () => {
+  if (!hasExportsRemaining()) {
+    $("paywall-modal").style.display = "flex";
+    return;
+  }
   setBusy(true);
   const bar = $("export-bar");
   bar.style.display = "block";
@@ -168,6 +173,7 @@ $("export-btn").addEventListener("click", async () => {
     a.href = url;
     a.download = name;
     a.textContent = `Download ${name} (${(blob.size / 1e6).toFixed(1)} MB)`;
+    recordSuccessfulExport();
     a.style.display = "inline-block";
     setStatus("Export complete.", "ok");
   } catch (err) {
@@ -177,6 +183,10 @@ $("export-btn").addEventListener("click", async () => {
     bar.style.display = "none";
     setBusy(false);
   }
+});
+
+$("paywall-close").addEventListener("click", () => {
+  $("paywall-modal").style.display = "none";
 });
 
 function setBusy(busy) {
