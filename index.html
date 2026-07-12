@@ -123,10 +123,12 @@
     <button id="export-btn" disabled>Export synced video</button>
     <progress id="export-bar" max="1" value="0"></progress>
     <br><a id="download-link"></a>
-    <div class="hint">Export runs in your browser via ffmpeg.wasm. The video
-      stream is copied without re-encoding; only the audio is rebuilt.
-      Preview note: tempo-drift correction uses a tiny pitch shift during
-      preview only — the export is pitch-preserving.</div>
+    <div class="hint">Everything happens on your device — no upload, no waiting
+  on a server. Exporting takes a bit since your browser is doing the video
+  work itself.<br><br>
+  Note: while you're previewing a tempo-corrected clip, the pitch may sound
+  very slightly off — that's just a preview quirk. Your final exported video
+  will sound completely clean.</div>
   </section>
 
   <footer>Personal-use tool · everything runs locally · nothing is uploaded</footer>
